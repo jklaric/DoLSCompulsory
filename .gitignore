@@ -1,52 +1,53 @@
-# Prerequisites
-*.d
+## .NET
+# User-specific files
+.idea/
+.vscode/
 
-# Object files
-*.o
-*.ko
-*.obj
-*.elf
+# User-specific Rider files
+.idea/
 
-# Linker output
-*.ilk
-*.map
-*.exp
+# .NET build results
+bin/
+obj/
 
-# Precompiled Headers
-*.gch
-*.pch
+# .NET tool and NuGet packages
+*.user
+*.userosscache
+*.suo
+*.userprefs
+project.lock.json
+project.fragment.lock.json
+artifacts/
 
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
+# ASP.NET temporary files
+wwwroot/
 
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
+# Azure Functions build output
+.vs2017/
+.vs2019/
+.vs/
 
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
+# Rider
+.idea/
 
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
+# Windows Installer files
+Thumbs.db
+ehthumbs.db
 
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
+
+# JetBrains Rider config files
+.idea/
+
+# Logs
+logs/
+
+# Windows Installer files
+*.cab
+*.msi
+*.msm
+*.msp
