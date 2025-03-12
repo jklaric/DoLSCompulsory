@@ -1,0 +1,46 @@
+services:
+  cleaner-service-1:
+    build:
+      context: .
+      dockerfile: Cleaner/Dockerfile
+    container_name: cleaner-service-1
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      DATA_PATH: /data
+    networks:
+      - DoLS-network
+    volumes:
+      - ./Data/maildir/1:/data
+    restart: no
+  
+  cleaner-service-2:
+    build:
+      context: .
+      dockerfile: Cleaner/Dockerfile
+    container_name: cleaner-service-2
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      DATA_PATH: /data
+    networks:
+      - DoLS-network
+    volumes:
+      - ./Data/maildir/2:/data
+    restart: no
+  
+  cleaner-service-3:
+    build:
+      context: .
+      dockerfile: Cleaner/Dockerfile
+    container_name: cleaner-service-3
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      DATA_PATH: /data
+    networks:
+      - DoLS-network
+    volumes:
+      - ./Data/maildir/3:/data
+    restart: no
+
+networks:
+  DoLS-network:
+    driver: bridge

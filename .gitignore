@@ -11,7 +11,7 @@ bin/
 obj/
 
 # Data Set
-Cleaner/Data/Dataset/
+Data/maildir/
 
 # .NET tool and NuGet packages
 *.user

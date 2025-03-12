@@ -2,8 +2,6 @@
 
 public class ProcessedEmailDto
 {
-    public string EmailName { get; set; }
-    public string EmailFrom { get; set; }
-    public string EmailTo { get; set; }
-    public string EmailContent { get; set; }
+    public required string EmailName { get; set; }
+    public required string EmailContent { get; set; }
 }
