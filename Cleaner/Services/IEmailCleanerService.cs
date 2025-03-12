@@ -2,6 +2,6 @@ using Cleaner.Models;
 
 public interface IEmailCleanerService
 {
-    Task<IEnumerable<ProcessedEmailDto>> CleanEmailsAsync();
-    Task<ProcessedEmailDto> CleanEmailAsync(string path);
+    Task CleanEmailsAsync(string _FilePath);
+    Task CleanEmailAsync(string path);
 }

@@ -17,8 +17,8 @@ host.Start();
 var messagePublisher = host.Services.GetRequiredService<MessagePublisher>();
 var emailCleanerService = new EmailCleanerService(messagePublisher);
 
-
-var processedEmails = await emailCleanerService.CleanEmailsAsync();
-await emailCleanerService.PublishEmailsAsync(processedEmails);
+var envDataPath = Environment.GetEnvironmentVariable("DATA_PATH") ?? "../Data/";
+await emailCleanerService.CleanEmailsAsync(envDataPath);
 
 await host.WaitForShutdownAsync();
+Console.WriteLine("Shutting down cleaner service");

@@ -5,18 +5,16 @@ using MimeKit;
 
 public class EmailCleanerService(MessagePublisher messagePublisher) : IEmailCleanerService
 {
-    private readonly string _FilePath = "Data/maildir/";
-    public async Task<IEnumerable<ProcessedEmailDto>> CleanEmailsAsync()
+    public async Task CleanEmailsAsync(string _FilePath = "../Data/")
     {
         string[] emails = Directory.GetFiles(_FilePath, "*", SearchOption.AllDirectories);
-        var emailPaths = emails.Select(email => Path.GetFullPath(email)).Take(15);
+        var emailPaths = emails.Select(Path.GetFullPath);
         var emailCleaningTasks = emailPaths.Select(emailPath => CleanEmailAsync(emailPath));
         
-        var processedEmails = await Task.WhenAll(emailCleaningTasks);
-        return processedEmails;
+        await Task.WhenAll(emailCleaningTasks);
     }
 
-    public async Task<ProcessedEmailDto> CleanEmailAsync(string path)
+    public async Task CleanEmailAsync(string path)
     {
         try
         {
@@ -29,18 +27,20 @@ public class EmailCleanerService(MessagePublisher messagePublisher) : IEmailClea
             cleanedFileName += ".txt";
             string body = content.TextBody;
             
-            return new ProcessedEmailDto
+            var cleanedEmail = new ProcessedEmailDto
             {
                 EmailName = cleanedFileName,
                 EmailFrom = from,
                 EmailTo = to,
                 EmailContent = body
             };
+            
+            await messagePublisher.PublishCleanedEmail(cleanedEmail);
         }
         catch (Exception e)
         {
             Console.WriteLine("Error processing " + path + ": " + e.Message);
-            return null;
+            throw;
         }
     }
     
