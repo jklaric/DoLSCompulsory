@@ -10,6 +10,9 @@
 bin/
 obj/
 
+# Data Set
+Cleaner/Data/Dataset/
+
 # .NET tool and NuGet packages
 *.user
 *.userosscache
