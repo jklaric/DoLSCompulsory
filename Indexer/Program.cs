@@ -1,5 +1,6 @@
 ﻿using EasyNetQ;
 using Indexer.Handlers;
+using Indexer.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -14,11 +15,14 @@ var rabbitmqUri =  $"amqp://{rabbitmqUser}:{rabbitmqPass}@{rabbitmqHost}:{rabbit
 Console.WriteLine("Using RabbitMQ URI: " + rabbitmqUri);
 builder.Services.AddSingleton(RabbitHutch.CreateBus(rabbitmqUri));
 builder.Services.AddHostedService<MessageHandler>();
+builder.Services.AddSingleton<IEmailIndexerService>(provider => new EmailIndexerService());
+
 
 
 using IHost host = builder.Build();
 
 host.Start();
+
 
 await host.WaitForShutdownAsync();
 Console.WriteLine("Shutting down indexer microservice");

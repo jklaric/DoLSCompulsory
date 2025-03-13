@@ -1,9 +1,10 @@
 ﻿using EasyNetQ;
+using Indexer.Services;
 using Microsoft.Extensions.Hosting;
 using Shared.Models;
 namespace Indexer.Handlers
 {
-    public class MessageHandler(IBus bus) : BackgroundService 
+    public class MessageHandler(IBus bus, IEmailIndexerService emailIndexerService) : BackgroundService 
     {
         
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -40,14 +41,13 @@ namespace Indexer.Handlers
             try
             {
                
-                var cleanEmailDto = new ProcessedEmailDto()
+                var cleanEmail = new ProcessedEmailDto()
                 {
                     EmailName = message.EmailName,
                     EmailContent = message.EmailContent
                 };
                 
-
-                Console.WriteLine($"Received clean email from file: {cleanEmailDto.EmailName}");
+               await emailIndexerService.IndexEmail(cleanEmail);
             }
             catch (Exception e)
             {
