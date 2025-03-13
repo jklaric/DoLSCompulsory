@@ -1,4 +1,25 @@
 services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_VHOST: /
+    networks:
+      - DoLS-network
+    healthcheck:
+      test: [ "CMD", "rabbitmqctl", "status" ]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 5s
+    
+  
   cleaner-service-1:
     build:
       context: .
@@ -7,8 +28,15 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: "Development"
       DATA_PATH: /data
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASS: guest
     networks:
       - DoLS-network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
     volumes:
       - ./Data/maildir/1:/data
     restart: no
@@ -21,8 +49,15 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: "Development"
       DATA_PATH: /data
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASS: guest
     networks:
       - DoLS-network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
     volumes:
       - ./Data/maildir/2:/data
     restart: no
@@ -35,8 +70,16 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: "Development"
       DATA_PATH: /data
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: guest
+      RABBITMQ_PASS: guest
+      
     networks:
       - DoLS-network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
     volumes:
       - ./Data/maildir/3:/data
     restart: no

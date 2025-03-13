@@ -1,13 +1,18 @@
-﻿using Cleaner.Handler;
+﻿
 using EasyNetQ;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Org.BouncyCastle.Asn1.Cmp;
 
 HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 
-builder.Services.AddSingleton(RabbitHutch.CreateBus("host=localhost"));
-builder.Services.AddHostedService<MessageHandler>();
+var rabbitmqHost = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "localhost";
+var rabbitmqPort = Environment.GetEnvironmentVariable("RABBITMQ_PORT") ?? "5672";
+var rabbitmqUser = Environment.GetEnvironmentVariable("RABBITMQ_USER") ?? "guest";
+var rabbitmqPass = Environment.GetEnvironmentVariable("RABBITMQ_PASS") ?? "guest";
+var rabbitmqUri =  $"amqp://{rabbitmqUser}:{rabbitmqPass}@{rabbitmqHost}:{rabbitmqPort}/";
+
+Console.WriteLine("Using RabbitMQ URI: " + rabbitmqUri);
+builder.Services.AddSingleton<IBus>(provider => RabbitHutch.CreateBus(rabbitmqUri));
 builder.Services.AddSingleton<MessagePublisher>();
 
 using IHost host = builder.Build();
@@ -21,4 +26,4 @@ var envDataPath = Environment.GetEnvironmentVariable("DATA_PATH") ?? "../Data/";
 await emailCleanerService.CleanEmailsAsync(envDataPath);
 
 await host.WaitForShutdownAsync();
-Console.WriteLine("Shutting down cleaner service");
+Console.WriteLine("Shutting down cleaner microservice");
