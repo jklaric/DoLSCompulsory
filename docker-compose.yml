@@ -41,7 +41,6 @@ services:
     build:
       context: .
       dockerfile: Indexer/Dockerfile
-    container_name: indexer-service
     environment:
       ASPNETCORE_ENVIRONMENT: "Development"
       POSTGRES_HOST: ${POSTGRES_HOST}
@@ -61,6 +60,8 @@ services:
       db:
         condition: service_healthy
     restart: no
+    deploy:
+      replicas: 3
     
   
   cleaner-service-1:

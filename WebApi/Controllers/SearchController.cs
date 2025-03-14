@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
+using WebApi.DTOs;
 using WebApi.Services;
 
 namespace WebApi.Controllers;

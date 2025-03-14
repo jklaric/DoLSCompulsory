@@ -21,6 +21,17 @@ var dataSourceBuilder = new NpgsqlDataSourceBuilder(connectionString);
 await using var dataSource = dataSourceBuilder.Build();
 builder.Services.AddSingleton(dataSource);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("DevCorsPolicy", policy =>
+    {
+        policy.AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
+
 builder.Services.AddSingleton<ISearchRepository, SearchRepository>();
 builder.Services.AddSingleton<ISearchService, SearchService>();
 
@@ -35,6 +46,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors("DevCorsPolicy");
 app.UseAuthorization();
 
 app.MapControllers();
