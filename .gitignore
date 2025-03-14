@@ -54,3 +54,5 @@ logs/
 *.msi
 *.msm
 *.msp
+
+.env
