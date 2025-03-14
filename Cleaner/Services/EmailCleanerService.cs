@@ -1,5 +1,6 @@
-using Cleaner.Models;
+
 using MimeKit;
+using Shared.Models;
 
 public class EmailCleanerService(MessagePublisher messagePublisher) : IEmailCleanerService
 {

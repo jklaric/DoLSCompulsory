@@ -1,4 +1,4 @@
-using Cleaner.Models;
+
 
 public interface IEmailCleanerService
 {

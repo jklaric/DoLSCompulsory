@@ -2,9 +2,9 @@
 using Indexer.Services;
 using Microsoft.Extensions.Hosting;
 using Shared.Models;
-namespace Indexer.Handlers
-{
-    public class MessageHandler(IBus bus, IEmailIndexerService emailIndexerService) : BackgroundService 
+namespace Indexer.Handlers;
+
+    public class MessageHandler(IBus bus, EmailIndexerService emailIndexerService) : BackgroundService 
     {
         
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -57,4 +57,3 @@ namespace Indexer.Handlers
            
         }
     }
-}

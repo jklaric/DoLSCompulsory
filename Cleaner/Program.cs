@@ -12,7 +12,7 @@ var rabbitmqPass = Environment.GetEnvironmentVariable("RABBITMQ_PASS") ?? "guest
 var rabbitmqUri =  $"amqp://{rabbitmqUser}:{rabbitmqPass}@{rabbitmqHost}:{rabbitmqPort}/";
 
 Console.WriteLine("Using RabbitMQ URI: " + rabbitmqUri);
-builder.Services.AddSingleton<IBus>(provider => RabbitHutch.CreateBus(rabbitmqUri));
+builder.Services.AddSingleton(RabbitHutch.CreateBus(rabbitmqUri));
 builder.Services.AddSingleton<MessagePublisher>();
 
 using IHost host = builder.Build();
@@ -26,4 +26,4 @@ var envDataPath = Environment.GetEnvironmentVariable("DATA_PATH") ?? "../Data/";
 await emailCleanerService.CleanEmailsAsync(envDataPath);
 
 await host.WaitForShutdownAsync();
-Console.WriteLine("Shutting down cleaner microservice");
+Console.WriteLine("Shutting down cleaner microservice");    

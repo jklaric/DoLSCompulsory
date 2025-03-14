@@ -1,4 +1,4 @@
-﻿using Cleaner.Models;
+﻿using Shared.Models;
 using EasyNetQ;
 
 public class MessagePublisher(IBus _bus)
