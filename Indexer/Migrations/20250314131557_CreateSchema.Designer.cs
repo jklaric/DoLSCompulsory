@@ -11,8 +11,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Indexer.Migrations
 {
     [DbContext(typeof(DoLsDbContext))]
-    [Migration("20250313215947_InitialState")]
-    partial class InitialState
+    [Migration("20250314131557_CreateSchema")]
+    partial class CreateSchema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -26,85 +26,85 @@ namespace Indexer.Migrations
 
             modelBuilder.Entity("Indexer.DbContext.Email", b =>
                 {
-                    b.Property<int>("EmailId")
+                    b.Property<int>("emailid")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("EmailId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("emailid"));
 
-                    b.Property<string>("EmailContent")
+                    b.Property<string>("emailcontent")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("EmailName")
+                    b.Property<string>("emailname")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("EmailId");
+                    b.HasKey("emailid");
 
-                    b.ToTable("Emails");
+                    b.ToTable("emails", (string)null);
                 });
 
             modelBuilder.Entity("Indexer.DbContext.Occurrence", b =>
                 {
-                    b.Property<int>("OccurrenceId")
+                    b.Property<int>("occurrenceid")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("OccurrenceId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("occurrenceid"));
 
-                    b.Property<int>("Count")
+                    b.Property<int>("count")
                         .HasColumnType("integer");
 
-                    b.Property<int>("EmailId")
+                    b.Property<int>("emailid")
                         .HasColumnType("integer");
 
-                    b.Property<int>("WordId")
+                    b.Property<int>("wordid")
                         .HasColumnType("integer");
 
-                    b.HasKey("OccurrenceId");
+                    b.HasKey("occurrenceid");
 
-                    b.HasIndex("EmailId");
+                    b.HasIndex("emailid");
 
-                    b.HasIndex("WordId");
+                    b.HasIndex("wordid");
 
-                    b.ToTable("Occurrences");
+                    b.ToTable("occurrences", (string)null);
                 });
 
             modelBuilder.Entity("Indexer.DbContext.Word", b =>
                 {
-                    b.Property<int>("WordId")
+                    b.Property<int>("wordid")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("WordId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("wordid"));
 
-                    b.Property<string>("WordValue")
+                    b.Property<string>("wordvalue")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("WordId");
+                    b.HasKey("wordid");
 
-                    b.ToTable("Words");
+                    b.ToTable("words", (string)null);
                 });
 
             modelBuilder.Entity("Indexer.DbContext.Occurrence", b =>
                 {
-                    b.HasOne("Indexer.DbContext.Email", "Email")
+                    b.HasOne("Indexer.DbContext.Email", "email")
                         .WithMany("Occurrences")
-                        .HasForeignKey("EmailId")
+                        .HasForeignKey("emailid")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Indexer.DbContext.Word", "Word")
+                    b.HasOne("Indexer.DbContext.Word", "word")
                         .WithMany("Occurrences")
-                        .HasForeignKey("WordId")
+                        .HasForeignKey("wordid")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Email");
+                    b.Navigation("email");
 
-                    b.Navigation("Word");
+                    b.Navigation("word");
                 });
 
             modelBuilder.Entity("Indexer.DbContext.Email", b =>

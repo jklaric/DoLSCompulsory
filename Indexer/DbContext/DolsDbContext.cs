@@ -3,9 +3,9 @@ namespace Indexer.DbContext;
 
 public class Email
 {
-    public int EmailId { get; set; } 
-    public string EmailName { get; set; }
-    public string EmailContent { get; set; }
+    public int emailid { get; set; } 
+    public string emailname { get; set; }
+    public string emailcontent { get; set; }
 
       
     public ICollection<Occurrence> Occurrences { get; set; } 
@@ -13,22 +13,22 @@ public class Email
 
 public class Word
 {
-    public int WordId { get; set; }
-    public string WordValue { get; set; }
+    public int wordid { get; set; }
+    public string wordvalue { get; set; }
         
     public ICollection<Occurrence> Occurrences { get; set; } 
 }
     
 public class Occurrence
 {
-    public int OccurrenceId { get; set; }  
+    public int occurrenceid { get; set; }  
         
-    public int WordId { get; set; }  
-    public Word Word { get; set; }   
-    public int EmailId { get; set; }  
-    public Email Email { get; set; }  
+    public int wordid { get; set; }  
+    public Word word { get; set; }   
+    public int emailid { get; set; }  
+    public Email email { get; set; }  
 
-    public int Count { get; set; } 
+    public int count { get; set; } 
 }
 
 public class DoLsDbContext : Microsoft.EntityFrameworkCore.DbContext
@@ -43,15 +43,19 @@ public class DoLsDbContext : Microsoft.EntityFrameworkCore.DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Email>().ToTable("emails");
+        modelBuilder.Entity<Word>().ToTable("words");
+        modelBuilder.Entity<Occurrence>().ToTable("occurrences");
+        
         modelBuilder.Entity<Occurrence>()
-            .HasOne(o => o.Word)
+            .HasOne(o => o.word)
             .WithMany(w => w.Occurrences)
-            .HasForeignKey(o => o.WordId);
+            .HasForeignKey(o => o.wordid);
 
         modelBuilder.Entity<Occurrence>()
-            .HasOne(o => o.Email)
+            .HasOne(o => o.email)
             .WithMany(f => f.Occurrences)
-            .HasForeignKey(o => o.EmailId);
+            .HasForeignKey(o => o.emailid);
 
         base.OnModelCreating(modelBuilder);
     }

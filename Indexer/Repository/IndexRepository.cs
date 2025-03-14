@@ -1,10 +1,12 @@
-﻿using Dapper;
-using Npgsql;
+﻿using Npgsql;
 using Shared.Models;
+using System.Threading;
+using Dapper;
 
 public class IndexRepository
 {
-    private readonly string _connectionString;  
+    private readonly string _connectionString;
+    private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(20);
 
     public IndexRepository(string connectionString)
     {
@@ -12,57 +14,70 @@ public class IndexRepository
     }
 
     public async Task IndexEmail(ProcessedEmailDto cleanEmail, WordDto wordData)
+{
+    int? wordId = 0;
+    var emailId = 0;
+
+    await _semaphore.WaitAsync();
+    try
     {
-        var wordId = 0;
-        var emailId = 0;
-        
         using var connection = new NpgsqlConnection(_connectionString);
         await connection.OpenAsync();
 
         var insertEmailSql = @"
-            INSERT INTO Emails (EmailName, EmailContent)
-            SELECT @EmailName, @EmailContent
-            WHERE NOT EXISTS (SELECT 1 FROM Emails WHERE EmailName = @EmailName)
-            RETURNING EmailId;";
+            WITH ins AS (
+                INSERT INTO Emails (EmailName, EmailContent)
+                VALUES (@EmailName, @EmailContent)
+                ON CONFLICT (EmailName) DO NOTHING
+                RETURNING EmailId
+            )
+            SELECT EmailId FROM ins
+            UNION ALL
+            SELECT EmailId FROM Emails WHERE EmailName = @EmailName;";
 
-        try
+        emailId = await connection.ExecuteScalarAsync<int>(insertEmailSql, new { cleanEmail.EmailName, cleanEmail.EmailContent });
+
+        if (emailId == 0)
         {
-            emailId = await connection.ExecuteScalarAsync<int>(insertEmailSql, new { cleanEmail.EmailName, cleanEmail.EmailContent });
+            throw new Exception($"Failed to retrieve EmailId for {cleanEmail.EmailName}");
         }
-        catch (Exception e)
-        {
-            Console.WriteLine("Error occurred pushing email: " + e);
-            throw;
-        }
-        
+
         var insertOrGetWordSql = @"
-            INSERT INTO Words (WordValue)
-            SELECT @Word
-            WHERE NOT EXISTS (SELECT 1 FROM Words WHERE WordValue = @Word)
-            RETURNING WordId;";
+    WITH ins AS (
+        INSERT INTO words (wordvalue)
+        VALUES (@Word)
+        ON CONFLICT (wordvalue) DO NOTHING
+        RETURNING wordid
+    )
+    SELECT wordid FROM ins
+    UNION ALL
+    SELECT wordid FROM words WHERE wordvalue = @Word LIMIT 1;";
 
-        try
+        wordId = await connection.ExecuteScalarAsync<int?>(insertOrGetWordSql, new { Word = wordData.Word });
+
+        if (wordId == null || wordId == 0)
         {
-            wordId = await connection.ExecuteScalarAsync<int>(insertOrGetWordSql, new { Word = wordData.Word });
+            throw new Exception($"Failed to retrieve WordId for {wordData.Word}");
         }
-        catch (Exception e)
-        {
-            Console.WriteLine("Error occurred pushing word: " + e);
-            throw;
-        }
+
 
         var insertOccurrenceSql = @"
             INSERT INTO Occurrences (WordId, EmailId, Count)
             VALUES (@WordId, @EmailId, @Count);";
 
-        try
-        {
-            await connection.ExecuteAsync(insertOccurrenceSql, new { WordId = wordId, EmailId = emailId, Count = wordData.Count });
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine("Error occurred pushing occurrence: " + e);
-            throw;
-        }
+        await connection.ExecuteAsync(insertOccurrenceSql, new { WordId = wordId, EmailId = emailId, Count = wordData.Count });
+
+        Console.WriteLine($"Inserted occurrence for WordId {wordId}, EmailId {emailId}, Count {wordData.Count}");
     }
+    catch (Exception e)
+    {
+        Console.WriteLine("Error: " + e.Message);
+        throw;
+    }
+    finally
+    {
+        _semaphore.Release();
+    }
+}
+
 }
