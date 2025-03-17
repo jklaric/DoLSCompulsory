@@ -1,6 +1,8 @@
 ﻿using EasyNetQ;
 using Indexer.Services;
 using Microsoft.Extensions.Hosting;
+using Monitoring;
+using Serilog;
 using Shared.Models;
 namespace Indexer.Handlers;
 
@@ -9,20 +11,19 @@ namespace Indexer.Handlers;
         
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            using var activity = MonitoringService.ActivitySource.StartActivity("MessageHandler");
            
             try
             {
-                Console.WriteLine("Subscribing to CleanEmail");
+                Log.Logger.Information("Subscribing to CleanEmail");
                 await bus.PubSub.SubscribeAsync<ProcessedEmailDto>("CleanEmail", async msg =>
                 {
                     await HandleCleanEmail(msg);
                 });
-                
-                Console.WriteLine("Subscribed to CleanEmail");
             }
             catch (Exception e)
             {
-                Console.WriteLine("Error occured: " + e);
+                Log.Logger.Error($"Error occurred: {e}");
                 throw;
             }
             
@@ -32,12 +33,13 @@ namespace Indexer.Handlers;
                 await Task.Delay(1000, stoppingToken);
             }
         
-            Console.WriteLine("Message handler is stopping..");
+            Log.Logger.Information("Message handler is stopping..");
         }
        
         public async Task HandleCleanEmail(ProcessedEmailDto message)
         {
-            Console.WriteLine("Handling clean email");
+            using var activity = MonitoringService.ActivitySource.StartActivity("HandleCleanEmail");
+            Log.Logger.Information("Handling clean email");
             try
             {
                
@@ -51,7 +53,7 @@ namespace Indexer.Handlers;
             }
             catch (Exception e)
             {
-                Console.WriteLine("Error occurred: " + e);
+                Log.Logger.Error($"Error occured: {e}");
                 throw;
             }
            

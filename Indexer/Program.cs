@@ -5,6 +5,7 @@ using Indexer.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Monitoring;
 
 HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 
@@ -27,6 +28,15 @@ var rabbitmqPort = Environment.GetEnvironmentVariable("RABBITMQ_PORT") ?? "5672"
 var rabbitmqUser = Environment.GetEnvironmentVariable("RABBITMQ_USER") ?? "guest";
 var rabbitmqPass = Environment.GetEnvironmentVariable("RABBITMQ_PASS") ?? "guest";
 var rabbitmqUri =  $"amqp://{rabbitmqUser}:{rabbitmqPass}@{rabbitmqHost}:{rabbitmqPort}/";
+
+//Monitoring and Tracing Setup
+
+var loggerUrl = Environment.GetEnvironmentVariable("SEQ_URL") ?? "http://localhost:5341";
+var zipkinUrl = Environment.GetEnvironmentVariable("ZIPKIN_URL") ?? "http://localhost:9411/api/v2/spans"; 
+    
+MonitoringService.SetupSerilog(loggerUrl);
+MonitoringService.SetupTracing(zipkinUrl);
+
 
 Console.WriteLine("Using RabbitMQ URI: " + rabbitmqUri);
 builder.Services.AddSingleton(RabbitHutch.CreateBus(rabbitmqUri));
