@@ -5,6 +5,8 @@ export default function SearchApp() {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const apiUrl = process.env.REACT_APP_API_URL;
+
 
   const handleSearch = async () => {
     if (!searchTerm.trim()) {
@@ -17,7 +19,7 @@ export default function SearchApp() {
 
     try {
       const response = await fetch(
-        `http://localhost:5228/Search?term=${encodeURIComponent(searchTerm)}`
+        `${apiUrl}/Search?term=${encodeURIComponent(searchTerm)}`
       );
 
       const text = await response.text();
