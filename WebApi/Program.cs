@@ -1,5 +1,6 @@
 using DotEnv;
 using DotNetEnv;
+using Monitoring;
 using Npgsql;
 using WebApi.Repository;
 using WebApi.Services;
@@ -31,6 +32,13 @@ builder.Services.AddCors(options =>
     });
 });
 
+//Monitoring and Tracing Setup
+
+var loggerUrl = Environment.GetEnvironmentVariable("SEQ_URL") ?? "http://localhost:5341";
+var zipkinUrl = Environment.GetEnvironmentVariable("ZIPKIN_URL") ?? "http://localhost:9411/api/v2/spans"; 
+    
+MonitoringService.SetupSerilog(loggerUrl);
+MonitoringService.SetupTracing(zipkinUrl);
 
 builder.Services.AddSingleton<ISearchRepository, SearchRepository>();
 builder.Services.AddSingleton<ISearchService, SearchService>();

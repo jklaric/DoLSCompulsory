@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
+using Monitoring;
+using Serilog;
 using WebApi.DTOs;
 using WebApi.Services;
 
@@ -12,6 +14,7 @@ public class SearchController(ISearchService _service): ControllerBase
     [HttpGet(Name = "searchByTerm")]
     public async Task<IActionResult> SearchByTerm([Required] string term)
     {
+        using var acivity = MonitoringService.ActivitySource.StartActivity("SearchByTerm");
         if (String.IsNullOrEmpty(term) || String.IsNullOrWhiteSpace(term))
         {
             return BadRequest("Term cannot be empty");
@@ -24,7 +27,7 @@ public class SearchController(ISearchService _service): ControllerBase
         }
         catch (Exception e)
         {
-            Console.WriteLine("Error searching " + e);
+            Log.Logger.Error("An error occurred while searching by term: {Error}", e.Message);
             throw;
         }
     }
