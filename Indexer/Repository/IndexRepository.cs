@@ -2,6 +2,8 @@
 using Shared.Models;
 using System.Threading;
 using Dapper;
+using Monitoring;
+using Serilog;
 
 public class IndexRepository
 {
@@ -15,6 +17,7 @@ public class IndexRepository
 
     public async Task IndexEmail(ProcessedEmailDto cleanEmail, WordDto wordData)
 {
+    using var activity = MonitoringService.ActivitySource.StartActivity("RepositoryIndexEmail");
     int? wordId = 0;
     var emailId = 0;
 
@@ -39,7 +42,7 @@ public class IndexRepository
 
         if (emailId == 0)
         {
-            throw new Exception($"Failed to retrieve EmailId for {cleanEmail.EmailName}");
+            Log.Logger.Error($"Failed to retrieve EmailId for {cleanEmail.EmailName}");
         }
 
         var insertOrGetWordSql = @"
@@ -57,7 +60,7 @@ public class IndexRepository
 
         if (wordId == null || wordId == 0)
         {
-            throw new Exception($"Failed to retrieve WordId for {wordData.Word}");
+            Log.Logger.Error($"Failed to retrieve WordId for {wordData.Word}");
         }
 
 
@@ -67,11 +70,11 @@ public class IndexRepository
 
         await connection.ExecuteAsync(insertOccurrenceSql, new { WordId = wordId, EmailId = emailId, Count = wordData.Count });
 
-        Console.WriteLine($"Inserted occurrence for WordId {wordId}, EmailId {emailId}, Count {wordData.Count}");
+        Log.Logger.Information($"Inserted occurrence for WordId {wordId}, EmailId {emailId}, Count {wordData.Count}");
     }
     catch (Exception e)
     {
-        Console.WriteLine("Error: " + e.Message);
+        Log.Logger.Error("Error: " + e.Message);
         throw;
     }
     finally

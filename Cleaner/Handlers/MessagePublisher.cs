@@ -1,41 +1,42 @@
 ﻿using Shared.Models;
 using EasyNetQ;
+using Monitoring;
+using Serilog;
 
 public class MessagePublisher(IBus _bus)
 {
     public async Task PublishCleanedEmail(ProcessedEmailDto cleanedEmail)
     {
-        int maxRetries = 3;
-        int retryDelay = 2000; // Delay in milliseconds between retries
+        using var activity = MonitoringService.ActivitySource.StartActivity("PublishEmail");
+        
 
-        for (int attempt = 1; attempt <= maxRetries; attempt++)
-        {
-            try
+            int maxRetries = 3;
+            int retryDelay = 2000;
+
+            for (int attempt = 1; attempt <= maxRetries; attempt++)
             {
-                Console.WriteLine("Publishing email: " + cleanedEmail.EmailName);
-                await _bus.PubSub.PublishAsync(cleanedEmail, msg => msg.WithTopic("CleanEmail"));
-                Console.WriteLine("Published email successfully: " + cleanedEmail.EmailName);
-                break; // Exit the loop if successful
-            }
-            catch (TaskCanceledException ex)
-            {
-                Console.WriteLine($"Task was canceled: {ex.Message}");
-                break;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error publishing email: {ex.Message}");
-                if (attempt == maxRetries)
+                try
                 {
-                    Console.WriteLine("Max retries reached, aborting.");
+                    Log.Logger.Information($"Publishing email: {cleanedEmail.EmailName}");
+                    await _bus.PubSub.PublishAsync(cleanedEmail, msg => msg.WithTopic("CleanEmail"));
                     break;
                 }
+                catch (TaskCanceledException ex)
+                {
+                    Log.Logger.Error($"Task was canceled: {ex.Message}");
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    Log.Logger.Error($"Error publishing email: {ex.Message}");
+                    if (attempt == maxRetries)
+                    {
+                        Log.Logger.Error($"Max retries reached: {ex.Message}");
+                        break;
+                    }
 
-                // Wait before retrying
-                await Task.Delay(retryDelay * attempt);
+                    await Task.Delay(retryDelay * attempt);
+                }
             }
         }
     }
-
-
-}

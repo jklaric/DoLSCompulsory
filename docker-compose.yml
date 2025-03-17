@@ -13,25 +13,25 @@ services:
     networks:
       - DoLS-network
     healthcheck:
-      test: [ "CMD", "rabbitmqctl", "status" ]
+      test: ["CMD", "rabbitmqctl", "status"]
       interval: 10s
       retries: 5
       start_period: 30s
       timeout: 5s
-    
+
   # PostgreSQL database service
   db:
-    image: postgres:13 
+    image: postgres:13
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}  
+      POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASS}
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "5432:5432"  
+      - "5432:5432"
     networks:
       - DoLS-network
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -41,7 +41,6 @@ services:
     build:
       context: .
       dockerfile: Indexer/Dockerfile
-    container_name: indexer-service
     environment:
       ASPNETCORE_ENVIRONMENT: "Development"
       POSTGRES_HOST: ${POSTGRES_HOST}
@@ -61,8 +60,49 @@ services:
       db:
         condition: service_healthy
     restart: no
-    
-  
+    deploy:
+      replicas: 3
+
+  webapi:
+    build:
+      context: .
+      dockerfile: WebApi/Dockerfile
+    container_name: webapi
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      POSTGRES_HOST: db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASS: ${POSTGRES_PASS}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PORT: 5432
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASS: ${RABBITMQ_PASS}
+    ports:
+      - "5228:5228" 
+    networks:
+      - DoLS-network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "3000:3000" 
+    environment:
+      - REACT_APP_API_URL=http://webapi:5228
+    depends_on:
+      - webapi
+    networks:
+      - DoLS-network
+
   cleaner-service-1:
     build:
       context: .
@@ -83,7 +123,7 @@ services:
     volumes:
       - ./Data/maildir/1:/data
     restart: no
-  
+
   cleaner-service-2:
     build:
       context: .
@@ -104,7 +144,7 @@ services:
     volumes:
       - ./Data/maildir/2:/data
     restart: no
-  
+
   cleaner-service-3:
     build:
       context: .
@@ -117,7 +157,6 @@ services:
       RABBITMQ_PORT: ${RABBITMQ_PORT}
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASS: ${RABBITMQ_PASS}
-      
     networks:
       - DoLS-network
     depends_on:

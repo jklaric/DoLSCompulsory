@@ -55,4 +55,27 @@ logs/
 *.msm
 *.msp
 
+# Environment variables
 .env
+
+# React Frontend (Ignore Dependencies and Build Files) ##
+frontend/node_modules/
+frontend/.next/
+frontend/.turbo/
+frontend/.cache/
+frontend/.parcel-cache/
+frontend/.eslintcache
+frontend/build/
+frontend/dist/
+frontend/coverage/
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+frontend/.DS_Store
+frontend/public/static/*
+!frontend/public/static/.gitkeep  # (Allow an empty static folder if needed)
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
