@@ -1,4 +1,5 @@
-﻿using Monitoring;
+﻿using Cleaner.Handlers;
+using Monitoring;
 using EasyNetQ;
 using EasyNetQ.Logging;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,7 +28,7 @@ builder.Services.AddSingleton(RabbitHutch.CreateBus(rabbitmqUri));
 
 //Add services
 builder.Services.AddSingleton<MessagePublisher>();
-
+builder.Services.AddHostedService<MessageHandler>();
 using IHost host = builder.Build();
 
 host.Start();

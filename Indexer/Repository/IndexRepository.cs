@@ -49,7 +49,7 @@ public class IndexRepository
     WITH ins AS (
         INSERT INTO words (wordvalue)
         VALUES (@Word)
-        ON CONFLICT (wordvalue) DO NOTHING
+        ON CONFLICT (wordvalue) DO UPDATE SET wordvalue = words.wordvalue
         RETURNING wordid
     )
     SELECT wordid FROM ins
@@ -61,16 +61,19 @@ public class IndexRepository
         if (wordId == null || wordId == 0)
         {
             Log.Logger.Error($"Failed to retrieve WordId for {wordData.Word}");
+            throw new Exception($"WordId is NULL for word: {wordData.Word}");
         }
 
+        Log.Logger.Information($"Retrieved WordId: {wordId} for word: {wordData.Word}");
 
         var insertOccurrenceSql = @"
-            INSERT INTO Occurrences (WordId, EmailId, Count)
-            VALUES (@WordId, @EmailId, @Count);";
+    INSERT INTO Occurrences (WordId, EmailId, Count)
+    VALUES (@WordId, @EmailId, @Count);";
 
         await connection.ExecuteAsync(insertOccurrenceSql, new { WordId = wordId, EmailId = emailId, Count = wordData.Count });
 
         Log.Logger.Information($"Inserted occurrence for WordId {wordId}, EmailId {emailId}, Count {wordData.Count}");
+
     }
     catch (Exception e)
     {

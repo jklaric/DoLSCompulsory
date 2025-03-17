@@ -36,6 +36,30 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+      
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx512m
+    networks:
+      - DoLS-network
+    mem_limit: 1g  
+    restart: unless-stopped
+
+  seq:
+    image: datalust/seq:latest
+    container_name: seq
+    ports:
+      - "5341:80"
+      - "5342:5341"
+    environment:
+      ACCEPT_EULA: "Y"
+    networks:
+      - DoLS-network
+    restart: unless-stopped
 
   indexer-service:
     build:
@@ -52,6 +76,8 @@ services:
       RABBITMQ_PORT: ${RABBITMQ_PORT}
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASS: ${RABBITMQ_PASS}
+      SEQ_URL: "http://seq:5341"
+      ZIPKIN_URL: "http://zipkin:9411/api/v2/spans"
     networks:
       - DoLS-network
     depends_on:
@@ -79,6 +105,8 @@ services:
       RABBITMQ_PORT: 5672
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASS: ${RABBITMQ_PASS}
+      SEQ_URL: "http://seq:5341"
+      ZIPKIN_URL: "http://zipkin:9411/api/v2/spans"
     ports:
       - "5228:5228" 
     networks:
@@ -93,11 +121,11 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - REACT_APP_API_URL=http://localhost:5228
     container_name: frontend
     ports:
-      - "3000:3000" 
-    environment:
-      - REACT_APP_API_URL=http://webapi:5228
+      - "3000:80" 
     depends_on:
       - webapi
     networks:
@@ -115,6 +143,8 @@ services:
       RABBITMQ_PORT: ${RABBITMQ_PORT}
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASS: ${RABBITMQ_PASS}
+      SEQ_URL: "http://seq:5341"
+      ZIPKIN_URL: "http://zipkin:9411/api/v2/spans"
     networks:
       - DoLS-network
     depends_on:
@@ -136,6 +166,8 @@ services:
       RABBITMQ_PORT: ${RABBITMQ_PORT}
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASS: ${RABBITMQ_PASS}
+      SEQ_URL: "http://seq:5341"
+      ZIPKIN_URL: "http://zipkin:9411/api/v2/spans"
     networks:
       - DoLS-network
     depends_on:
@@ -157,6 +189,8 @@ services:
       RABBITMQ_PORT: ${RABBITMQ_PORT}
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASS: ${RABBITMQ_PASS}
+      SEQ_URL: "http://seq:5341"
+      ZIPKIN_URL: "http://zipkin:9411/api/v2/spans"
     networks:
       - DoLS-network
     depends_on:
