@@ -36,6 +36,25 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+      
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - DoLS-network
+
+  seq:
+    image: datalust/seq:latest
+    container_name: seq
+    ports:
+      - "5341:5341"
+      - "80:80"
+    environment:
+      ACCEPT_EULA: "Y"
+    networks:
+      - DoLS-network
 
   indexer-service:
     build:
@@ -52,6 +71,8 @@ services:
       RABBITMQ_PORT: ${RABBITMQ_PORT}
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASS: ${RABBITMQ_PASS}
+      SEQ_URL: "http://seq:5341"
+      ZIPKIN_URL: "http://zipkin:9411/api/v2/spans"
     networks:
       - DoLS-network
     depends_on:
@@ -79,6 +100,8 @@ services:
       RABBITMQ_PORT: 5672
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASS: ${RABBITMQ_PASS}
+      SEQ_URL: "http://seq:5341"
+      ZIPKIN_URL: "http://zipkin:9411/api/v2/spans"
     ports:
       - "5228:5228" 
     networks:
@@ -115,6 +138,8 @@ services:
       RABBITMQ_PORT: ${RABBITMQ_PORT}
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASS: ${RABBITMQ_PASS}
+      SEQ_URL: "http://seq:5341"
+      ZIPKIN_URL: "http://zipkin:9411/api/v2/spans"
     networks:
       - DoLS-network
     depends_on:
@@ -136,6 +161,8 @@ services:
       RABBITMQ_PORT: ${RABBITMQ_PORT}
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASS: ${RABBITMQ_PASS}
+      SEQ_URL: "http://seq:5341"
+      ZIPKIN_URL: "http://zipkin:9411/api/v2/spans"
     networks:
       - DoLS-network
     depends_on:
@@ -157,6 +184,8 @@ services:
       RABBITMQ_PORT: ${RABBITMQ_PORT}
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASS: ${RABBITMQ_PASS}
+      SEQ_URL: "http://seq:5341"
+      ZIPKIN_URL: "http://zipkin:9411/api/v2/spans"
     networks:
       - DoLS-network
     depends_on:
