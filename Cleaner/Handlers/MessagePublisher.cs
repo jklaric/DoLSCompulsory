@@ -38,5 +38,5 @@ public class MessagePublisher(IBus _bus)
                     await Task.Delay(retryDelay * attempt);
                 }
             }
-        }
     }
+}

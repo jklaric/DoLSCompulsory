@@ -42,19 +42,24 @@ services:
     container_name: zipkin
     ports:
       - "9411:9411"
+    environment:
+      - JAVA_OPTS=-Xms256m -Xmx512m
     networks:
       - DoLS-network
+    mem_limit: 1g  
+    restart: unless-stopped
 
   seq:
     image: datalust/seq:latest
     container_name: seq
     ports:
-      - "5341:5341"
-      - "80:80"
+      - "5341:80"
+      - "5342:5341"
     environment:
       ACCEPT_EULA: "Y"
     networks:
       - DoLS-network
+    restart: unless-stopped
 
   indexer-service:
     build:
@@ -116,11 +121,11 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - REACT_APP_API_URL=http://localhost:5228
     container_name: frontend
     ports:
-      - "3000:3000" 
-    environment:
-      - REACT_APP_API_URL=http://webapi:5228
+      - "3000:80" 
     depends_on:
       - webapi
     networks:

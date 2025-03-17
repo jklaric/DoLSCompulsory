@@ -19,6 +19,8 @@ COPY . ./
 # Build and publish the application
 RUN dotnet publish WebApi/WebApi.csproj -c Release -o /app/publish
 
+ENV ASPNETCORE_URLS=http://+:5228
+
 # Final deployment stage
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS publish
 WORKDIR /app

@@ -7,7 +7,6 @@ export default function SearchApp() {
   const [error, setError] = useState("");
   const apiUrl = process.env.REACT_APP_API_URL;
 
-
   const handleSearch = async () => {
     if (!searchTerm.trim()) {
       setError("Please enter a search term.");
@@ -18,20 +17,16 @@ export default function SearchApp() {
     setError("");
 
     try {
+      console.log("Fetching from:", apiUrl);
       const response = await fetch(
         `${apiUrl}/Search?term=${encodeURIComponent(searchTerm)}`
       );
 
-      const text = await response.text();
-      if (!text) {
-        throw new Error("No data received from the server.");
-      }
-
-      const data = JSON.parse(text);
-
       if (!response.ok) {
-        throw new Error(data.message || "Error fetching search results.");
+        throw new Error(`HTTP error! Status: ${response.status}`);
       }
+
+      const data = await response.clone().json();
 
       setResults(data.length ? data : []);
       if (data.length === 0) {
