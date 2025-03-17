@@ -40,9 +40,19 @@ export default function SearchApp() {
     setLoading(false);
   };
 
+  // Function to trigger file download
+  const handleDownload = (fileContent, fileName) => {
+    const blob = new Blob([fileContent], { type: "text/plain" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
   return (
     <div className="flex flex-col items-center min-h-screen bg-gray-50 p-6">
-      {/* App Heading */}
       <h1 className="text-3xl font-semibold mb-6 text-gray-800">
         📧 Email Search App
       </h1>
@@ -70,23 +80,33 @@ export default function SearchApp() {
       {/* Loading Spinner */}
       {loading && <p className="mt-3 text-gray-600">Loading...</p>}
 
-      {/* Search Results - Scrollable */}
+      {/* Search Results with Download Buttons */}
       <div className="mt-6 w-full max-w-lg max-h-[400px] overflow-y-auto bg-white shadow-md rounded-lg border border-gray-200">
         {results.length > 0
-          ? results.map((result) => (
+          ? results.map((file, index) => (
               <div
-                key={result.emailId}
-                className="p-4 border-b last:border-b-0"
+                key={index}
+                className="p-4 border-b last:border-b-0 flex justify-between items-center"
               >
-                <strong className="text-lg text-gray-900">
-                  {result.emailName}
-                </strong>
-                <p className="text-sm text-gray-600 mt-1">
-                  {result.emailContent}
-                </p>
-                <p className="text-xs text-gray-500 mt-2">
-                  Occurrences: {result.occurrenceCount}
-                </p>
+                <div>
+                  <strong className="text-lg text-gray-900">
+                    {file.emailName}
+                  </strong>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {file.emailContent}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Occurrences: {file.occurrenceCount}
+                  </p>
+                </div>
+                <button
+                  className="bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 transition"
+                  onClick={() =>
+                    handleDownload(file.emailContent, `email_${index + 1}.txt`)
+                  }
+                >
+                  ⬇ Download
+                </button>
               </div>
             ))
           : !loading &&
