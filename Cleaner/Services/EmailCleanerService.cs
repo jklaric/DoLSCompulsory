@@ -1,55 +1,51 @@
 
-using Cleaner.Handler;
-using Cleaner.Models;
 using MimeKit;
+using Monitoring;
+using Serilog;
+using Shared.Models;
 
 public class EmailCleanerService(MessagePublisher messagePublisher) : IEmailCleanerService
 {
-    public async Task CleanEmailsAsync(string _FilePath = "../Data/")
+    public async Task CleanEmailsAsync(string filePath)
     {
-        string[] emails = Directory.GetFiles(_FilePath, "*", SearchOption.AllDirectories);
-        var emailPaths = emails.Select(Path.GetFullPath);
-        var emailCleaningTasks = emailPaths.Select(emailPath => CleanEmailAsync(emailPath));
-        
-        await Task.WhenAll(emailCleaningTasks);
+        using (MonitoringService.ActivitySource.StartActivity("LoadFiles"))
+        {
+            string[] emails = Directory.GetFiles(filePath, "*", SearchOption.AllDirectories);
+            var emailPaths = emails.Select(Path.GetFullPath);
+            var emailCleaningTasks = emailPaths.Select(emailPath => CleanEmailAsync(emailPath));
+            Log.Logger.Information($"Cleaning total of {emails.Length} emails on path {Directory.GetParent(filePath)}");
+            await Task.WhenAll(emailCleaningTasks);
+        }
     }
 
     public async Task CleanEmailAsync(string path)
     {
-        try
-        {
-            var content = await MimeMessage.LoadAsync(path);
-            
-            var from = content.From.ToString();
-            var to = content.To.ToString();
-            var fileName = Path.GetFileName(path);
-            var cleanedFileName = fileName.Substring(0, fileName.Length - 1);
-            cleanedFileName += ".txt";
-            string body = content.TextBody;
-            
-            var cleanedEmail = new ProcessedEmailDto
+        using var activity = MonitoringService.ActivitySource.StartActivity("CleanEmail");
+            try
             {
-                EmailName = cleanedFileName,
-                EmailFrom = from,
-                EmailTo = to,
-                EmailContent = body
-            };
+                var content = await MimeMessage.LoadAsync(path);
+                var fileName = Path.GetFileName(path);
+                var cleanedFileName = Directory.GetParent(path).FullName +"/" + fileName.Substring(0, fileName.Length - 1);
+                cleanedFileName += ".txt";
+                string body = content.TextBody;
+
+                Log.Logger.Information($"Cleaning email: {cleanedFileName}");
             
-            await messagePublisher.PublishCleanedEmail(cleanedEmail);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine("Error processing " + path + ": " + e.Message);
-            throw;
+                if (!string.IsNullOrWhiteSpace(body))
+                {
+                    var cleanedEmail = new ProcessedEmailDto
+                    {
+                        EmailName = cleanedFileName,
+                        EmailContent = body
+                    };
+                
+                    await messagePublisher.PublishCleanedEmail(cleanedEmail);
+                }
+            }
+            catch (Exception e)
+            {
+                Log.Logger.Error($"Error processing {path}: {e.Message}");
+                throw;
+            }
         }
     }
-    
-    public async Task PublishEmailsAsync(IEnumerable<ProcessedEmailDto> cleanedEmails)
-    {
-       await Parallel.ForEachAsync(cleanedEmails, async (cleanedEmail, CancellationToken) =>
-       {
-           Console.WriteLine("Publishing email: " + cleanedEmail.EmailName);
-           await messagePublisher.PublishCleanedEmail(cleanedEmail);
-       });
-    }
-}

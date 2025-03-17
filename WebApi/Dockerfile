@@ -1,14 +1,14 @@
-# Use .NET SDK for building the application
+﻿# Use .NET SDK for building the application
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 
 # Set the working directory to /app
 WORKDIR /app
 
 # Copy only the project file first
-COPY Cleaner/Cleaner.csproj ./Cleaner/
+COPY WebApi/WebApi.csproj ./WebApi/
 
 # Restore dependencies
-RUN dotnet restore ./Cleaner/Cleaner.csproj
+RUN dotnet restore ./WebApi/WebApi.csproj
 
 # Set working directory to /app (if needed, or keep it as /app)
 WORKDIR /app
@@ -17,7 +17,9 @@ WORKDIR /app
 COPY . ./ 
 
 # Build and publish the application
-RUN dotnet publish Cleaner/Cleaner.csproj -c Release -o /app/publish
+RUN dotnet publish WebApi/WebApi.csproj -c Release -o /app/publish
+
+ENV ASPNETCORE_URLS=http://+:5228
 
 # Final deployment stage
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS publish
@@ -27,4 +29,4 @@ WORKDIR /app
 COPY --from=build /app/publish ./
 
 # Set the entry point
-ENTRYPOINT ["dotnet", "Cleaner.dll"]
+ENTRYPOINT ["dotnet", "WebApi.dll"]
